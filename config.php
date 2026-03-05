@@ -13,7 +13,10 @@ if ($conn->connect_error) {
 }
 
 // Create database if not exists
-$sql = "CREATE DATABASE IF NOT EXISTS $dbname";
+$sql = "DROP DATABASE IF EXISTS $dbname";
+$conn->query($sql);
+
+$sql = "CREATE DATABASE $dbname";
 if ($conn->query($sql) === TRUE) {
     $conn = new mysqli($servername, $username, $password, $dbname);
 } else {
