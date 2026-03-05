@@ -1,8 +1,25 @@
 <?php
 include 'config.php';
 session_start();
+
+// Handle Add Menu Item Form Submission
+if(isset($_POST['add_menu'])) {
+    $dish = $_POST['dish'];
+    $category = $_POST['category'];
+    $price = $_POST['price'];
+    
+    $sql = "INSERT INTO menu_items (dish, category, price) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssd", $dish, $category, $price);
+    
+    if($stmt->execute()) {
+        $success_message = "Menu item added successfully!";
+    } else {
+        $error_message = "Error adding menu item: " . $conn->error;
+    }
+}
 ?>
-<!DOCTYPE html>
+<!DOCTYPE html>>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -156,7 +173,19 @@ session_start();
         <div class="main-content">
             <h2 class="section-title">Add Menu Items</h2>
             
-            <form action="insert.php" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
+            <?php if(isset($success_message)): ?>
+                <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
+                    ✅ <?php echo $success_message; ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if(isset($error_message)): ?>
+                <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+                    ❌ <?php echo $error_message; ?>
+                </div>
+            <?php endif; ?>
+            
+            <form action="menu.php" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
                 <div class="form-group">
                     <label>Dish</label>
                     <input type="text" name="dish" required>
@@ -197,7 +226,7 @@ session_start();
                 </thead>
                 <tbody>
                     <?php
-                    $result = $conn->query("SELECT * FROM menu_items ORDER BY created_at DESC");
+                    $result = $conn->query("SELECT * FROM menu_items ORDER BY id DESC");
                     
                     if($result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
