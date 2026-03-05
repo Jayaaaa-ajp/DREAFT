@@ -1,6 +1,23 @@
 <?php
 include 'config.php';
 session_start();
+
+// Handle Add Customer Form Submission
+if(isset($_POST['add_customer'])) {
+    $first_name = $_POST['first_name'];
+    $last_name = $_POST['last_name'];
+    $phone = $_POST['phone'];
+    
+    $sql = "INSERT INTO customers (first_name, last_name, phone) VALUES (?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("sss", $first_name, $last_name, $phone);
+    
+    if($stmt->execute()) {
+        $success_message = "Customer added successfully!";
+    } else {
+        $error_message = "Error adding customer: " . $conn->error;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -156,7 +173,19 @@ session_start();
         <div class="main-content">
             <h2 class="section-title">Add Customer</h2>
             
-            <form action="insert.php" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
+            <?php if(isset($success_message)): ?>
+                <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #c3e6cb;">
+                    ✅ <?php echo $success_message; ?>
+                </div>
+            <?php endif; ?>
+            
+            <?php if(isset($error_message)): ?>
+                <div style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #f5c6cb;">
+                    ❌ <?php echo $error_message; ?>
+                </div>
+            <?php endif; ?>
+            
+            <form action="customers.php" method="POST" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
                 <div class="form-group">
                     <label>First Name</label>
                     <input type="text" name="first_name" required>
@@ -188,7 +217,7 @@ session_start();
                 </thead>
                 <tbody>
                     <?php
-                    $result = $conn->query("SELECT * FROM customers ORDER BY created_at DESC");
+                    $result = $conn->query("SELECT * FROM customers ORDER BY id DESC");
                     
                     if($result->num_rows > 0) {
                         while($row = $result->fetch_assoc()) {
